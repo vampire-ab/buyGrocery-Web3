@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
-
-contract Buy{
+//Deployed pn goerli network at 0x803B6840E5981950dB4e2bb8bEe7c4A191dE2Ecc
+contract BuyGrocery{
   address payable owner;
   
   // This event is emit whenever new memo is created.
@@ -10,7 +10,8 @@ contract Buy{
     address indexed from,
     uint256 timestamp,
     string name,
-    string message
+    string message,
+    string item
   );
 
   // This event is emit whenever new grocery is created.
@@ -40,7 +41,7 @@ contract Buy{
   constructor(){
     owner = payable(msg.sender);
     grocery.push(Groceries("Tip", 0));
-    grocery.push(Groceries("Coffee", 1));    
+    grocery.push(Groceries("Coffee", 346));    
   }
 
   /*
@@ -54,7 +55,7 @@ contract Buy{
     require(msg.value > 0, "Hey, you can't transfer zero!");
     
     if(_item > 0)
-      require(grocery[_item] == msg.value);
+      require(grocery[_item].cost == (msg.value));    
 
     memos.push (Memo(
       msg.sender,
@@ -65,8 +66,13 @@ contract Buy{
     ));
     
     emit NewMemo(msg.sender, block.timestamp, _name, _message, grocery[_item].item);
-
   }
+
+  /*
+   * @dev add new item in grocery
+   * @param _item: name of the new grocery item 
+   * @param _cost: msg for the contract owner (from buyer)
+   */
 
   function addGrocery(string memory _item, uint256 _cost) public {
     require(payable(msg.sender) == owner, "Only owner can add a grocery.");      
@@ -74,13 +80,28 @@ contract Buy{
     emit NewGroceries(_item, _cost);
   }
 
+  /*
+   * @dev Transfer the balance of contract to owner.
+   */
+
   function withdrawTips() public {
-    require(address(this).balance > 0, "Cannot transfer nil balance.")
+    require(address(this).balance > 0, "Cannot transfer nil balance.");
     owner.transfer(address(this).balance);
   }
+
+  /*
+   * @dev get all the memos
+   */
 
   function getMemos () public view returns(Memo[] memory){
     return memos;
   }
 
+  /*
+   * @dev get all the grocery
+   */
+
+  function getGrocery () public view returns(Groceries[] memory){
+    return grocery;
+  }
 }
